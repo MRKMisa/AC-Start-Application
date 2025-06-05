@@ -1,5 +1,0 @@
-Turn off graphic
-Function to create wheel spin graph
-Function to create throttle graph
-Function to create cluth graph
-0 - 100 kmh time

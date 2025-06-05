@@ -1,5 +1,4 @@
 import mmap
-import functools
 import ctypes
 from ctypes import c_int32, c_float, c_wchar
 

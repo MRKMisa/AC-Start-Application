@@ -15,7 +15,7 @@ import win32gui
 import time
 
 
-def show_reaction_time(x, y, scale, driver_name, reaction_time):
+def show_wheels_slip(x, y, scale, driver_name, wheels_slip):
     pygame.init()
     w, h = pygame.display.Info().current_w, pygame.display.Info().current_h
     fuchsia = (255, 0, 128)
@@ -42,9 +42,9 @@ def show_reaction_time(x, y, scale, driver_name, reaction_time):
     image_width, image_height = 300*scale, 92*scale
 
     if x == "auto":
-        x = int(w/2-image_width/2)
+        x = int(w/1.25-image_width/2)
     if y == "auto":
-        y = int(h/2-image_height/2)
+        y = int(h/1.2-image_height/2)
 
 
     sec_from_start = 0
@@ -66,9 +66,9 @@ def show_reaction_time(x, y, scale, driver_name, reaction_time):
     image = pygame.image.load("Icons/Nocolor template.png")
     image = pygame.transform.scale(image, (image_width, image_height))
 
-    if reaction_time < 0.3:
+    if wheels_slip < 0.3:
         image2 = pygame.image.load("Icons/Green template.png")
-    elif reaction_time < 0.4:
+    elif wheels_slip < 0.4:
         image2 = pygame.image.load("Icons/Orange template.png")
     else:
         image2 = pygame.image.load("Icons/Red template.png")
@@ -80,9 +80,9 @@ def show_reaction_time(x, y, scale, driver_name, reaction_time):
     font_italic = pygame.font.Font("Fonts/F1-Italic.ttf", int(round(14*scale, 0)))
     font_bold = pygame.font.Font("Fonts/F1-Bold.ttf", int(round(30*scale, 0)))
 
-    title = font_italic.render(f"{driver_name}'s reaction time", True, (255, 255, 255))
+    title = font_italic.render(f"{driver_name}'s wheels slip", True, (255, 255, 255))
     title.set_alpha(0)
-    text1 = font_bold.render(f"{round(reaction_time, 3)} s" , True, (255, 255, 255))
+    text1 = font_bold.render(str(round(wheels_slip)) , True, (255, 255, 255))
     text1.set_alpha(0)
 
     text1_an_done = False

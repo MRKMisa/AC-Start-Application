@@ -14,8 +14,16 @@ import win32con
 import win32gui
 import time
 
+from get_shared_mem import get_shared_mem
+
 
 def show_reaction_time(x, y, scale, driver_name, reaction_time):
+    scale = float(scale)
+
+    if driver_name == "auto":
+        info = get_shared_mem()
+        driver_name = info.static.playerName
+
     pygame.init()
     w, h = pygame.display.Info().current_w, pygame.display.Info().current_h
     fuchsia = (255, 0, 128)
@@ -43,9 +51,13 @@ def show_reaction_time(x, y, scale, driver_name, reaction_time):
 
     if x == "auto":
         x = int(w/2-image_width/2)
+    else:
+        x = int(x)
+        
     if y == "auto":
         y = int(h/2-image_height/2)
-
+    else:
+        y = float(y)
 
     sec_from_start = 0
     time_from_start = 0

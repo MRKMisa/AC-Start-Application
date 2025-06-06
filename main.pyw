@@ -6,13 +6,16 @@ import csv
 from get_shared_mem import get_shared_mem
 from datetime import datetime
 from show_reaction_time import show_reaction_time
+from show_kmph_time import show_kmph_time
+from show_wheels_slip import show_wheels_slip
 
 info = get_shared_mem()
 
 conf = configparser.ConfigParser()
-conf.read("config.ini")
 
 def load_config():
+    conf.read("config.ini")
+
     # ReactionTimeGraphic
     ShowReactionTimeGraphic = conf["ReactionTimeGraphic"]["ShowReactionTimeGraphic"]
 
@@ -155,7 +158,7 @@ while True:
                 reset = False
                 continue
             
-            if load_config()["Misc"]["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true":
                 start_recording_telemery_data()
             race_start_time = time.time()
 
@@ -169,6 +172,7 @@ while True:
 
             speedKmh = info.physics.speedKmh
 
+            kmph_delay = 0
             speedMax = 0
             while speedKmh < 100:
                 speedKmh = info.physics.speedKmh
@@ -177,15 +181,18 @@ while True:
                 if brake:
                     kmph_delay = "Braked"
                     break
-                if speedKmh >= speedMax:
+                
+                if speedKmh > speedMax:
                     speedMax = speedKmh
-                else:
+                
+                if speedKmh+1 < speedMax:
                     kmph_delay = "None"
                     break
-            if load_config()["Misc"]["recordCsv"].lower() == "true":
+
+            if load_config()["recordCsv"].lower() == "true":
                 end_recording_telemetry_data()
 
-            if kmph_delay != "None" or kmph_delay != "Braked":
+            if kmph_delay != "None" and kmph_delay != "Braked":
                 kmph_delay = time.time()-race_start_time
 
             now = datetime.now()
@@ -204,16 +211,17 @@ while True:
 
             configSettings = load_config()
 
+            print(configSettings["ShowReactionTimeGraphic"].lower() == "true")
             if configSettings["ShowReactionTimeGraphic"].lower() == "true":
                 show_reaction_time(configSettings["ReactionTimeGraphicX"], configSettings["ReactionTimeGraphicY"], configSettings["ReactionTimeGraphicScale"], configSettings["driverName"], reaction_time)
             
             if configSettings["ShowkmphTimeGraphic"].lower() == "true":
-                show_reaction_time(configSettings["ShowkmphTimeGraphicX"], configSettings["ShowkmphTimeGraphicY"], configSettings["ShowkmphTimeGraphicScale"], configSettings["driverName"], kmph_delay)
+                show_kmph_time(configSettings["kmphTimeGraphicX"], configSettings["kmphTimeGraphicY"], configSettings["kmphTimeGraphicScale"], configSettings["driverName"], kmph_delay)
 
             if configSettings["ShowWheelsSlipGraphic"].lower() == "true":
-                show_reaction_time(configSettings["WheelsSlipGraphicX"], configSettings["WheelsSlipGraphicY"], configSettings["WheelsSlipGraphicScale"], configSettings["driverName"], wheel_slip)
+                show_wheels_slip(configSettings["WheelsSlipGraphicX"], configSettings["WheelsSlipGraphicY"], configSettings["WheelsSlipGraphicScale"], configSettings["driverName"], wheel_slip)
 
-            if load_config()["Misc"]["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true":
                 file_name = f"{now.date()} | {now.hour}:{minute}:{second} | {info.static.track} | {info.static.carModel} | {round(reaction_time, 3)} | {kmph_delay} | {wheel_slip}"
 
                 with open(f"CSVs/{file_name}", "w", newline="") as csvfile:
@@ -245,7 +253,7 @@ while True:
                 reset = False
                 continue
             
-            if load_config()["Misc"]["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true":
                 start_recording_telemery_data()
             race_start_time = time.time()
 
@@ -267,15 +275,17 @@ while True:
                 if brake:
                     kmph_delay = "Braked"
                     break
+
                 if speedKmh >= speedMax:
                     speedMax = speedKmh
-                else:
+
+                if speedKmh+1 < speedMax:
                     kmph_delay = "None"
                     break
-            if load_config()["Misc"]["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true":
                 end_recording_telemetry_data()
 
-            if kmph_delay != "None" or kmph_delay != "Braked":
+            if kmph_delay != "None" and kmph_delay != "Braked":
                 kmph_delay = time.time()-race_start_time
 
             now = datetime.now()
@@ -292,18 +302,16 @@ while True:
             with open("output.txt", "a") as f:
                 f.write(f"{now.date()} | {now.hour}:{minute}:{second} | {info.static.track} | {info.static.carModel} | {round(reaction_time, 3)} | {kmph_delay} | {wheel_slip} \n")
 
-            configSettings = load_config()
-
             if configSettings["ShowReactionTimeGraphic"].lower() == "true":
                 show_reaction_time(configSettings["ReactionTimeGraphicX"], configSettings["ReactionTimeGraphicY"], configSettings["ReactionTimeGraphicScale"], configSettings["driverName"], reaction_time)
             
             if configSettings["ShowkmphTimeGraphic"].lower() == "true":
-                show_reaction_time(configSettings["ShowkmphTimeGraphicX"], configSettings["ShowkmphTimeGraphicY"], configSettings["ShowkmphTimeGraphicScale"], configSettings["driverName"], kmph_delay)
+                show_kmph_time(configSettings["kmphTimeGraphicX"], configSettings["kmphTimeGraphicY"], configSettings["kmphTimeGraphicScale"], configSettings["driverName"], kmph_delay)
 
             if configSettings["ShowWheelsSlipGraphic"].lower() == "true":
-                show_reaction_time(configSettings["WheelsSlipGraphicX"], configSettings["WheelsSlipGraphicY"], configSettings["WheelsSlipGraphicScale"], configSettings["driverName"], wheel_slip)
+                show_wheels_slip(configSettings["WheelsSlipGraphicX"], configSettings["WheelsSlipGraphicY"], configSettings["WheelsSlipGraphicScale"], configSettings["driverName"], wheel_slip)
             
-            if load_config()["Misc"]["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true":
                 file_name = f"{now.date()} | {now.hour}:{minute}:{second} | {info.static.track} | {info.static.carModel} | {round(reaction_time, 3)} | {kmph_delay} | {wheel_slip}"
 
                 with open(f"CSVs/{file_name}", "w", newline="") as csvfile:

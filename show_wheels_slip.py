@@ -14,8 +14,15 @@ import win32con
 import win32gui
 import time
 
+from get_shared_mem import get_shared_mem
 
 def show_wheels_slip(x, y, scale, driver_name, wheels_slip):
+    scale = float(scale)
+
+    if driver_name == "auto":
+        info = get_shared_mem()
+        driver_name = info.static.playerName
+
     pygame.init()
     w, h = pygame.display.Info().current_w, pygame.display.Info().current_h
     fuchsia = (255, 0, 128)
@@ -43,9 +50,13 @@ def show_wheels_slip(x, y, scale, driver_name, wheels_slip):
 
     if x == "auto":
         x = int(w/1.25-image_width/2)
+    else:
+        x = int(x)
+
     if y == "auto":
         y = int(h/1.2-image_height/2)
-
+    else:
+        y = int(y)
 
     sec_from_start = 0
     time_from_start = 0

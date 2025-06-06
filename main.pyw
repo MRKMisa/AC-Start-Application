@@ -83,7 +83,9 @@ def recording_telemetry_data():
     global run
     while run:
         speedKmh, throttle, brake, clutch, gear, wheelSlip = info.physics.speedKmh, info.physics.gas, info.physics.brake, info.physics.clutch, info.physics.gear, info.physics.wheelSlip
-        
+        currentTime = info.graphics.currentTime
+
+
         now = datetime.now()
         date = now.date()
         if int(now.minute) < 10:
@@ -108,6 +110,8 @@ def recording_telemetry_data():
                           "minutes":minute,
                           "seconds":second,
                           "delay":delay,
+
+                          "currentTime":currentTime,
 
                           "speedKmh":speedKmh,
                           "throttle":throttle,

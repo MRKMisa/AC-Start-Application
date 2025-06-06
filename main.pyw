@@ -1,61 +1,137 @@
 import time
+import configparser
+import threading
+import csv
+
 from get_shared_mem import get_shared_mem
 from datetime import datetime
 from show_reaction_time import show_reaction_time
 
 info = get_shared_mem()
 
+conf = configparser.ConfigParser()
+conf.read("config.ini")
+
 def load_config():
-    with open("config.ini", "r") as f:
-        configs = f.readlines()
+    # ReactionTimeGraphic
+    ShowReactionTimeGraphic = conf["ReactionTimeGraphic"]["ShowReactionTimeGraphic"]
 
-    for line in configs:
-        line = line.strip()
+    ReactionTimeGraphicScale = conf["ReactionTimeGraphic"]["ReactionTimeGraphicScale"]
 
-        if "x=" in line:
-            if line.replace("x=", "") == "auto":
-                x = "auto"
-                continue
-            else:
-                if line.replace("x=", "").isdigit():
-                    x = int(line.replace("x=", ""))
-                else:
-                    x = "auto"
+    ReactionTimeGraphicX = conf["ReactionTimeGraphic"]["ReactionTimeGraphicX"]
 
-        elif "y=" in line:
-            if line.replace("y=", "") == "auto":
-                y = "auto"
-                continue
-            else:
-                if line.replace("y=", "").isdigit():
-                    y = int(line.replace("y=", ""))
-                else:
-                    y = "auto"
+    ReactionTimeGraphicY = conf["ReactionTimeGraphic"]["ReactionTimeGraphicY"]
 
-        elif "scale=" in line:
-            if line.replace("scale=", "").isdigit():
-                scale = int(line.replace("scale=", ""))
-            else:
-                scale = 1
+    #0-100kmphTimeGraphic
+    ShowkmphTimeGraphic = conf["0-100kmphTimeGraphic"]["Show0-100kmphTimeGraphic"]
 
-        elif "driverName=" in line:
-            if line.replace("driverName=", "") == "auto":
-                driverName = info.static.playerName
-                continue
-            else:
-                driverName = line.replace("driverName=", "")
-                continue  
+    kmphTimeGraphicScale = conf["0-100kmphTimeGraphic"]["0-100kmphTimeGraphicScale"]
+
+    kmphTimeGraphicX = conf["0-100kmphTimeGraphic"]["0-100kmphTimeGraphicX"]
+
+    kmphTimeGraphicY = conf["0-100kmphTimeGraphic"]["0-100kmphTimeGraphicY"]
+
+    #WheelsSlipGraphic
+    ShowWheelsSlipGraphic = conf["WheelsSlipGraphic"]["ShowWheelsSlipGraphic"]
+
+    WheelsSlipGraphicScale = conf["WheelsSlipGraphic"]["WheelsSlipGraphicScale"]
+
+    WheelsSlipGraphicX = conf["WheelsSlipGraphic"]["WheelsSlipGraphicX"]
+
+    WheelsSlipGraphicY = conf["WheelsSlipGraphic"]["WheelsSlipGraphicY"]
+
+    #Misc
+    driverName = conf["Misc"]["driverName"]
+
+    cvsDataFrequency = conf["Misc"]["cvsDataFrequency"]
+
+
+    configSettings = {"ShowReactionTimeGraphic":ShowReactionTimeGraphic,
+                      "ReactionTimeGraphicScale":ReactionTimeGraphicScale,
+                      "ReactionTimeGraphicX":ReactionTimeGraphicX,
+                      "ReactionTimeGraphicY":ReactionTimeGraphicY,
+
+                      "ShowkmphTimeGraphic":ShowkmphTimeGraphic,
+                      "kmphTimeGraphicScale":kmphTimeGraphicScale,
+                      "kmphTimeGraphicX":kmphTimeGraphicX,
+                      "kmphTimeGraphicY":kmphTimeGraphicY,
+
+                      "ShowWheelsSlipGraphic":ShowWheelsSlipGraphic,
+                      "WheelsSlipGraphicScale":WheelsSlipGraphicScale,
+                      "WheelsSlipGraphicX":WheelsSlipGraphicX,
+                      "WheelsSlipGraphicY":WheelsSlipGraphicY,
+
+                      "driverName":driverName,
+                      "cvsDataFrequency":cvsDataFrequency
+                        }
     
-    return x, y, scale, driverName
+    return configSettings
 
 change = False
 reset = False
 
+telemetry_data = []
+run = True
+
+def recording_telemetry_data():
+    global run
+    while run:
+        speedKmh, throttle, brake, clutch, gear, wheelSlip = info.physics.speedKmh, info.physics.gas, info.physics.brake, info.physics.clutch, info.physics.gear, info.physics.wheelSlip
+        
+        now = datetime.now()
+        date = now.date()
+        if int(now.minute) < 10:
+            minute = "0"+str(now.minute)
+        else:
+            minute = now.minute
+        if int(now.second) < 10:
+            second = "0"+str(now.second)
+        else:
+            second = now.second
+
+        if len(telemetry_data) != 0:
+            delay = time.time()-float(telemetry_data[len(telemetry_data)-1]["time"])
+        else:
+            delay = "None"
+        
+        telemetry_data.append({
+                          "number":len(telemetry_data),
+                          "time":time.time(),
+                          "date":date,
+                          "hour":now.hour,
+                          "minutes":minute,
+                          "seconds":second,
+                          "delay":delay,
+
+                          "speedKmh":speedKmh,
+                          "throttle":throttle,
+                          "brake":brake,
+                          "clutch":clutch,
+                          "gear":gear,
+                          "FLwheelSlip":wheelSlip[0],
+                          "FRwheelSlip":wheelSlip[1],
+                          "RLwheelSlip":wheelSlip[2],
+                          "RRwheelSlip":wheelSlip[3]
+                          })
+        
+        time.sleep(int(1000/int(load_config()["cvsDataFrequency"]))/1000)
+
+def start_recording_telemery_data():
+    t1 = threading.Thread(target=recording_telemetry_data)
+
+    t1.start()
+
+    return t1    
+
+def end_recording_telemetry_data():
+    global run
+    run = False
+
 while True:
-    gear, clutch, currentTime = info.physics.gear, info.physics.clutch, info.graphics.currentTime
+    currentTime = info.graphics.currentTime
 
     if currentTime == "-:--:---":
-        gear, clutch, currentTime = info.physics.gear, info.physics.clutch, info.graphics.currentTime
+        gear, clutch = info.physics.gear, info.physics.clutch
 
 
         if gear != 1 and clutch == 0.0:
@@ -76,15 +152,37 @@ while True:
                 reset = False
                 continue
 
-            start_time = time.time()
+            start_recording_telemery_data()
+            race_start_time = time.time()
 
             clutch = info.physics.clutch
             while clutch == 0.0:
                 clutch = info.physics.clutch
 
-            end = time.time()
+            reaction_time = time.time()-race_start_time
 
-            reaction_time = end-start_time
+            wheel_slip = (float(info.physics.wheelSlip[3])+float(info.physics.wheelSlip[2]))/2
+
+            speedKmh = info.physics.speedKmh
+
+            speedMax = 0
+            while speedKmh < 100:
+                speedKmh = info.physics.speedKmh
+                brake = info.physics.brake
+
+                if brake:
+                    kmph_delay = "Braked"
+                    break
+                if speedKmh >= speedMax:
+                    speedMax = speedKmh
+                else:
+                    kmph_delay = "None"
+                    break
+            
+            end_recording_telemetry_data()
+
+            if kmph_delay != "None" or kmph_delay != "Braked":
+                kmph_delay = time.time()-race_start_time
 
             now = datetime.now()
 
@@ -98,11 +196,28 @@ while True:
                 second = now.second
 
             with open("output.txt", "a") as f:
-                f.write(f"{now.date()} | {now.hour}:{minute}:{second} | Reaction time: {round(reaction_time, 3)} s\n")
+                f.write(f"{now.date()} | {now.hour}:{minute}:{second} | {info.static.track} | {info.static.carModel} | {round(reaction_delay, 3)} | {kmph_delay} | {wheel_slip} \n")
 
-            x, y, scale, driverName = load_config()
+            configSettings = load_config()
 
-            show_reaction_time(x, y, scale, driverName, reaction_time)
+            if configSettings["ShowReactionTimeGraphic"] == "True":
+                show_reaction_time(configSettings["ReactionTimeGraphicX"], configSettings["ReactionTimeGraphicY"], configSettings["ReactionTimeGraphicScale"], configSettings["driverName"], reaction_time)
+            
+            if configSettings["ShowkmphTimeGraphic"] == "True":
+                show_reaction_time(configSettings["ShowkmphTimeGraphicX"], configSettings["ShowkmphTimeGraphicY"], configSettings["ShowkmphTimeGraphicScale"], configSettings["driverName"], kmph_delay)
+
+            if configSettings["ShowWheelsSlipGraphic"] == "True":
+                show_reaction_time(configSettings["WheelsSlipGraphicX"], configSettings["WheelsSlipGraphicY"], configSettings["WheelsSlipGraphicScale"], configSettings["driverName"], wheel_slip)
+
+            file_name = f"{now.date()} | {now.hour}:{minute}:{second} | {info.static.track} | {info.static.carModel} | {round(reaction_delay, 3)} | {kmph_delay} | {wheel_slip}"
+
+            with open(f"CSVs/{file_name}", "w", newline="") as csvfile:
+                fieldnames = telemetry_data[0].keys()
+
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=";")
+
+                writer.writeheader()
+                writer.writerows(telemetry_data)
 
             continue
 
@@ -124,15 +239,38 @@ while True:
             if reset:
                 reset = False
                 continue
+            
+            start_recording_telemery_data()
+            race_start_time = time.time()
 
-            start_time = time.time()
+            gear = info.physics.gear
             while gear == 1:
                 gear = info.physics.gear
 
+            reaction_time = time.time()-race_start_time
 
-            end = time.time()
+            wheel_slip = (float(info.physics.wheelSlip[3])+float(info.physics.wheelSlip[2]))/2
 
-            reaction_time = end-start_time
+            speedKmh = info.physics.speedKmh
+
+            speedMax = 0
+            while speedKmh < 100:
+                speedKmh = info.physics.speedKmh
+                brake = info.physics.brake
+
+                if brake:
+                    kmph_delay = "Braked"
+                    break
+                if speedKmh >= speedMax:
+                    speedMax = speedKmh
+                else:
+                    kmph_delay = "None"
+                    break
+            
+            end_recording_telemetry_data()
+
+            if kmph_delay != "None" or kmph_delay != "Braked":
+                kmph_delay = time.time()-race_start_time
 
             now = datetime.now()
 
@@ -148,9 +286,26 @@ while True:
             with open("output.txt", "a") as f:
                 f.write(f"{now.date()} | {now.hour}:{minute}:{second} | Reaction time: {round(reaction_time, 3)} s\n")
 
-            x, y, scale, driverName = load_config()
+            configSettings = load_config()
 
-            show_reaction_time(x, y, scale, driverName, reaction_time)
+            if configSettings["ShowReactionTimeGraphic"] == "True":
+                show_reaction_time(configSettings["ReactionTimeGraphicX"], configSettings["ReactionTimeGraphicY"], configSettings["ReactionTimeGraphicScale"], configSettings["driverName"], reaction_time)
+            
+            if configSettings["ShowkmphTimeGraphic"] == "True":
+                show_reaction_time(configSettings["ShowkmphTimeGraphicX"], configSettings["ShowkmphTimeGraphicY"], configSettings["ShowkmphTimeGraphicScale"], configSettings["driverName"], kmph_delay)
+
+            if configSettings["ShowWheelsSlipGraphic"] == "True":
+                show_reaction_time(configSettings["WheelsSlipGraphicX"], configSettings["WheelsSlipGraphicY"], configSettings["WheelsSlipGraphicScale"], configSettings["driverName"], wheel_slip)
+
+            file_name = f"{now.date()} | {now.hour}:{minute}:{second} | {info.static.track} | {info.static.carModel} | {round(reaction_delay, 3)} | {kmph_delay} | {wheel_slip}"
+
+            with open(f"CSVs/{file_name}", "w", newline="") as csvfile:
+                fieldnames = telemetry_data[0].keys()
+
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=";")
+
+                writer.writeheader()
+                writer.writerows(telemetry_data)
 
             continue
     else:

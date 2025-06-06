@@ -211,7 +211,6 @@ while True:
 
             configSettings = load_config()
 
-            print(configSettings["ShowReactionTimeGraphic"].lower() == "true")
             if configSettings["ShowReactionTimeGraphic"].lower() == "true":
                 show_reaction_time(configSettings["ReactionTimeGraphicX"], configSettings["ReactionTimeGraphicY"], configSettings["ReactionTimeGraphicScale"], configSettings["driverName"], reaction_time)
             
@@ -222,7 +221,7 @@ while True:
                 show_wheels_slip(configSettings["WheelsSlipGraphicX"], configSettings["WheelsSlipGraphicY"], configSettings["WheelsSlipGraphicScale"], configSettings["driverName"], wheel_slip)
 
             if load_config()["recordCsv"].lower() == "true":
-                file_name = f"{now.date()} | {now.hour}:{minute}:{second} | {info.static.track} | {info.static.carModel} | {round(reaction_time, 3)} | {kmph_delay} | {wheel_slip}"
+                file_name = f"{now.date()}  {now.hour}-{minute}-{second}  {info.static.track}  {info.static.carModel}  {round(reaction_time, 3)}  {kmph_delay}  {wheel_slip}.csv"
 
                 with open(f"CSVs/{file_name}", "w", newline="") as csvfile:
                     fieldnames = telemetry_data[0].keys()
@@ -312,7 +311,7 @@ while True:
                 show_wheels_slip(configSettings["WheelsSlipGraphicX"], configSettings["WheelsSlipGraphicY"], configSettings["WheelsSlipGraphicScale"], configSettings["driverName"], wheel_slip)
             
             if load_config()["recordCsv"].lower() == "true":
-                file_name = f"{now.date()} | {now.hour}:{minute}:{second} | {info.static.track} | {info.static.carModel} | {round(reaction_time, 3)} | {kmph_delay} | {wheel_slip}"
+                file_name = f"{now.date()}  {now.hour}-{minute}-{second}  {info.static.track}  {info.static.carModel}  {round(reaction_time, 3)}  {kmph_delay}  {wheel_slip}.csv"
 
                 with open(f"CSVs/{file_name}", "w", newline="") as csvfile:
                     fieldnames = telemetry_data[0].keys()

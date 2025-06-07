@@ -198,3 +198,9 @@ def get_shared_mem():
     info = SimInfo()
 
     return info
+
+if __name__ == "__main__":
+    while True:
+        info = get_shared_mem()
+
+        print(f"{info.physics.speedKmh} \r", end="")

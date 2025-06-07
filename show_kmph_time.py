@@ -61,19 +61,15 @@ def show_kmph_time(x, y, scale, driver_name, kmph_time):
     sec_from_start = 0
     time_from_start = 0
 
-    title_fade_time = 0
     title_alpha = 0
 
-    line_fade_time = 0
     line_length = 2
 
-    text1_fade_time = 0
     text1_alpha = 0
 
     image = pygame.image.load("Icons/Nocolor template.png")
     image = pygame.transform.scale(image, (image_width, image_height))
 
-    image2_fade_time = 0
     image2_alpha = 0
     image2_an = False
 
@@ -113,8 +109,6 @@ def show_kmph_time(x, y, scale, driver_name, kmph_time):
     backward_an = False
     y_rect_diff = 0
 
-    disappear_time = 0
-
     run = True
     while run:
         for event in pygame.event.get():
@@ -127,69 +121,63 @@ def show_kmph_time(x, y, scale, driver_name, kmph_time):
 
         screen.blit(title, (x+image.get_width()/2-title.get_width()/2, y+5))
 
-        if sec_from_start > 1:
-            if round(time.time(), 4) != round(line_fade_time, 4):
-
-                pygame.draw.line(screen, (255, 255, 255), (x+image.get_width()/line_length, y+image.get_height()/3), (x+image.get_width()-image.get_width()/line_length, y+image.get_height()/3), 2)
+        if sec_from_start > 1 and line_length < 11:
+            pygame.draw.line(screen, (255, 255, 255), (x+image.get_width()/line_length, y+image.get_height()/3), (x+image.get_width()-image.get_width()/line_length, y+image.get_height()/3), 2)
 
 
-                if line_length < 11:
-                    line_length += 0.1*scale
-                else:
-                    pass
-                line_fade_time = time.time()
+            line_length += 0.5*scale
+            time.sleep(0.03)
+        elif sec_from_start > 1:
+            pygame.draw.line(screen, (255, 255, 255), (x+image.get_width()/line_length, y+image.get_height()/3), (x+image.get_width()-image.get_width()/line_length, y+image.get_height()/3), 2)
 
         screen.blit(text1, (x+image.get_width()/2-text1.get_width()/2, y+image.get_height()/1.6-text1.get_height()/2))
     
-        if not title_an_done and round(time.time(), 4) != round(title_fade_time, 4):
+        if not title_an_done:
             title.set_alpha(title_alpha)
             if title_alpha < 200:
-                title_alpha += 1*scale
+                title_alpha += 10*scale
             elif title_alpha < 255:
-                title_alpha += 7*scale
+                title_alpha += 18*scale
             else:
                 title_an_done = True
-            title_fade_time = time.time()
+            time.sleep(0.05)
 
         if not text1_an_done and sec_from_start > 2:
-            if round(time.time(), 4) != round(text1_fade_time, 4):
-                text1.set_alpha(text1_alpha)
-                if text1_alpha < 200:
-                    text1_alpha += 1*scale
-                elif text1_alpha < 255:
-                    text1_alpha += 7*scale
-                else:
-                    time.sleep(0.1)
+            text1.set_alpha(text1_alpha)
+            if text1_alpha < 200:
+                text1_alpha += 10*scale
+            elif text1_alpha < 255:
+                text1_alpha += 18*scale
+            else:
+                time.sleep(0.1)
 
-                    image2_an = True
-                    text1_an_done = True
-                text1_fade_time = time.time()
+                image2_an = True
+                text1_an_done = True
+            time.sleep(0.05)
 
         if image2_an:
-            if round(time.time(), 4) != round(image2_fade_time, 4):
-                image2.set_alpha(image2_alpha)
-                image2_alpha += 1*scale
+            image2.set_alpha(image2_alpha)
+            image2_alpha += 5*scale
 
-                if image2_alpha > 255:
-                    image2_an = False
-                    backward_an = True
-                    time.sleep(2)
-                    image.set_alpha(0)
+            if image2_alpha > 255:
+                image2_an = False
+                backward_an = True
+                time.sleep(2)
+                image.set_alpha(0)
 
-                image2_fade_time = time.time()
+            time.sleep(0.02)
 
         if backward_an:
-            if round(time.time(), 4) != round(disappear_time, 4):
-                pygame.draw.rect(screen, fuchsia, (x, y+image.get_height()-y_rect_diff, image_width, image_height+10*scale))
+            pygame.draw.rect(screen, fuchsia, (x, y+image.get_height()-y_rect_diff, image_width, image_height+10*scale))
 
-                y_rect_diff += 0.7*(scale*scale)
+            y_rect_diff += 7*(scale*scale)
 
-                if y_rect_diff > image_height+5*scale:
-                    backward_an = False
-                    time.sleep(0.5)
-                    run = False
+            if y_rect_diff > image_height+10*scale:
+                backward_an = False
+                time.sleep(0.5)
+                run = False
 
-                disappear_time = time.time()
+            time.sleep(0.04)
 
         if round(time.time(), 1) != round(time_from_start, 1):
             sec_from_start += 0.1
@@ -197,4 +185,9 @@ def show_kmph_time(x, y, scale, driver_name, kmph_time):
 
         pygame.display.update()
 
+        time.sleep(0.02)
+
     pygame.quit()
+
+if __name__ == "__main__":
+    show_kmph_time("auto", "auto", 1, "Larry", 5.55555)

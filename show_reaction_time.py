@@ -128,6 +128,7 @@ def show_reaction_time(x, y, scale, driver_name, reaction_time):
                 else:
                     pass
                 line_fade_time = time.time()
+                #time.sleep(0.1)
 
         screen.blit(text1, (x+image.get_width()/2-text1.get_width()/2, y+image.get_height()/1.6-text1.get_height()/2))
     

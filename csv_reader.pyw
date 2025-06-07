@@ -13,8 +13,12 @@ def open_graphs():
     width=2
     size=6
 
-    if len(lb.curselection()) > 4:
-        print(f"ERROR - Cant choose more than 4 files: {lb.curselection()}")
+    if len(lb.curselection()) < 1:
+        print(f"ERROR - Choose at least one file: {lb.curselection()}")
+        messagebox.showerror("Error", f"Choose at least one file!!")
+        return
+    elif len(lb.curselection()) > 4:
+        print(f"ERROR - Can not choose more than 4 files: {lb.curselection()}")
         messagebox.showerror("Error", f"Can not choose more than 4 files!!")
         return
     
@@ -161,7 +165,7 @@ def open_graphs():
 
 root = Tk()
 root.title("csv reader")
-root.geometry("750x400")
+root.geometry("400x300")
 
 l = Label(root, text="Choose csv:")
 l.pack()

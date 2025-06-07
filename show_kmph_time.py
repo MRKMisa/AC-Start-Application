@@ -77,12 +77,23 @@ def show_kmph_time(x, y, scale, driver_name, kmph_time):
     image2_alpha = 0
     image2_an = False
 
-    if kmph_time < 0.3:
+    if kmph_time == "None" or kmph_time == "Braked":
+        image2 = pygame.image.load("Icons/Red template.png")
+
+    elif kmph_time < 4.5:
         image2 = pygame.image.load("Icons/Green template.png")
-    elif kmph_time < 0.4:
+
+        kmph_time = f"{round(kmph_time, 1)} s"
+
+    elif kmph_time < 6:
         image2 = pygame.image.load("Icons/Orange template.png")
+
+        kmph_time = f"{round(kmph_time, 1)} s"
+        
     else:
         image2 = pygame.image.load("Icons/Red template.png")
+
+        kmph_time = f"{round(kmph_time, 1)} s"
         
     image2 = pygame.transform.scale(image2, (image_width, image_height))
 
@@ -93,7 +104,7 @@ def show_kmph_time(x, y, scale, driver_name, kmph_time):
 
     title = font_italic.render(f"{driver_name}'s 0 - 100 KM/H", True, (255, 255, 255))
     title.set_alpha(0)
-    text1 = font_bold.render(f"{round(kmph_time, 1)} s" , True, (255, 255, 255))
+    text1 = font_bold.render(f"{kmph_time}" , True, (255, 255, 255))
     text1.set_alpha(0)
 
     text1_an_done = False

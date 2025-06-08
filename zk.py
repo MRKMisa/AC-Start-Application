@@ -1,14 +1,6 @@
-import os
+from Utils.show_reaction_time import show_reaction_time
+from Utils.show_kmph_time import show_kmph_time
 
-dir_list = os.listdir("CSVs")
-maxFiles = 2
+show_reaction_time("a", "bottom", 0.9, "Larry", 0.257)
 
-print(dir_list)
-
-rev_dir_list = dir_list
-
-rev_dir_list.reverse()
-
-for i, file in enumerate(rev_dir_list):
-    if i > maxFiles-2:
-        os.remove(f"CSVs/{file}")
+#show_kmph_time("auto", "auto", 1, "Larry", 5.55555)

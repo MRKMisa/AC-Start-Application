@@ -155,7 +155,7 @@ while True:
             
             write_script_output("Race start registed")
 
-            if load_config()["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true" or load_config()["recordCsv"].lower() == "1":
                 t1 = start_recording_telemery_data()
                 write_script_output("Starting recording telemetry")
             race_start_time = time.time()
@@ -191,7 +191,7 @@ while True:
 
             write_script_output(f"100km/h registed: {kmph_delay}")
 
-            if load_config()["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true" or load_config()["recordCsv"].lower() == "1":
                 for i, thread in enumerate(threading.enumerate()):
                     write_script_output(f"Thread{i}, Name: {thread.name}, Daemon: {thread.daemon}, Alive: {thread.is_alive()}")
                 time.sleep(int(1000/int(load_config()["csvDataFrequency"]))/1000)
@@ -210,20 +210,20 @@ while True:
 
             configSettings = load_config()
 
-            if configSettings["ShowReactionTimeGraphic"].lower() == "true":
+            if configSettings["ShowReactionTimeGraphic"].lower() == "true" or load_config()["ShowReactionTimeGraphic"].lower() == "1":
                 show_reaction_time(configSettings["ReactionTimeGraphicX"], configSettings["ReactionTimeGraphicY"], configSettings["ReactionTimeGraphicScale"], configSettings["driverName"], reaction_time)
             
-            if configSettings["ShowkmphTimeGraphic"].lower() == "true":
+            if configSettings["ShowkmphTimeGraphic"].lower() == "true" or load_config()["ShowkmphTimeGraphic"].lower() == "1":
                 show_kmph_time(configSettings["kmphTimeGraphicX"], configSettings["kmphTimeGraphicY"], configSettings["kmphTimeGraphicScale"], configSettings["driverName"], kmph_delay)
 
             now = datetime.now()
             timestamp = now.strftime("%Y-%m-%d %H-%M-%S")
-            if load_config()["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true"or load_config()["recordCsv"].lower() == "1":
                 file_name = f"{timestamp}  {info.static.track}  {info.static.carModel}  {round(reaction_time, 3)}  {kmph_delay}.csv"
 
                 with open(f"CSVs/{file_name}", "w", newline="") as csvfile:
 
-                    if load_config()["csvAutoDelete"].lower() == "true":
+                    if load_config()["csvAutoDelete"].lower() == "true" or load_config()["csvAutoDelete"].lower() == "1":
                         write_script_output("Auto cleaning is turn on")
                         dir_list = os.listdir("CSVs")
 
@@ -278,7 +278,7 @@ while True:
             
             write_script_output("Race start registed")
 
-            if load_config()["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true" or load_config()["recordCsv"].lower() == "1":
                 t1 = start_recording_telemery_data()
                 write_script_output("Starting recording telemetry")
             race_start_time = time.time()
@@ -313,7 +313,7 @@ while True:
 
             write_script_output(f"100km/h registed: {kmph_delay}")
 
-            if load_config()["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true" or load_config()["recordCsv"].lower() == "1":
                 for i, thread in enumerate(threading.enumerate()):
                     write_script_output(f"Thread{i}, Name: {thread.name}, Daemon: {thread.daemon}, Alive: {thread.is_alive()}")
                 time.sleep(int(1000/int(load_config()["csvDataFrequency"]))/1000)
@@ -333,20 +333,20 @@ while True:
             
             configSettings = load_config()
 
-            if configSettings["ShowReactionTimeGraphic"].lower() == "true":
+            if configSettings["ShowReactionTimeGraphic"].lower() == "true" or load_config()["ShowReactionTimeGraphic"].lower() == "1":
                 show_reaction_time(configSettings["ReactionTimeGraphicX"], configSettings["ReactionTimeGraphicY"], configSettings["ReactionTimeGraphicScale"], configSettings["driverName"], reaction_time)
             
-            if configSettings["ShowkmphTimeGraphic"].lower() == "true":
+            if configSettings["ShowkmphTimeGraphic"].lower() == "true" or load_config()["ShowkmphTimeGraphic"].lower() == "1":
                 show_kmph_time(configSettings["kmphTimeGraphicX"], configSettings["kmphTimeGraphicY"], configSettings["kmphTimeGraphicScale"], configSettings["driverName"], kmph_delay)
 
             now = datetime.now()
             timestamp = now.strftime("%Y-%m-%d %H-%M-%S")
-            if load_config()["recordCsv"].lower() == "true":
+            if load_config()["recordCsv"].lower() == "true" or load_config()["recordCsv"].lower() == "1":
                 file_name = f"{timestamp}  {info.static.track}  {info.static.carModel}  {round(reaction_time, 3)}  {kmph_delay}.csv"
 
                 with open(f"CSVs/{file_name}", "w", newline="") as csvfile:
 
-                    if load_config()["csvAutoDelete"].lower() == "true":
+                    if load_config()["csvAutoDelete"].lower() == "true" or load_config()["csvAutoDelete"].lower() == "1":
                         write_script_output("Auto cleaning is turn on")
                         dir_list = os.listdir("CSVs")
 

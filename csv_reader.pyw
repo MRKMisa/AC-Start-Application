@@ -23,7 +23,7 @@ def open_graphs():
         return
     
     rows, cols = int(math.ceil(len(lb.curselection())/2)), 1 if len(lb.curselection())==1 else 2
-    print(f"Make rows: {rows}, cols: {cols}")
+    print(f"Rows: {rows}, Cols: {cols}")
 
     fig = make_subplots(rows=int(math.ceil(len(lb.curselection())/2)), cols=1 if len(lb.curselection())==1 else 2, subplot_titles=[dir_list[i] for i in lb.curselection()])
     
@@ -139,7 +139,6 @@ def open_graphs():
         )
 
         row, col = math.ceil((i+1)/2), (i%cols)+1
-        print(row, col, i)
 
         fig.add_trace(trace1, row=row, col=col)
         fig.add_trace(trace2, row=row, col=col)

@@ -49,13 +49,21 @@ def show_reaction_time(x, y, scale, driver_name, reaction_time):
 
     image_width, image_height = 300*scale, 92*scale
 
-    if x == "auto":
+    if x == "center":
         x = int(w/2-image_width/2)
+    elif x == "right":
+        x = int(w/1.25-image_width/2)
+    elif x == "left":
+        x = int(w/4-image_width/2)
     else:
         x = int(x)
         
-    if y == "auto":
+    if y == "center":
         y = int(h/2-image_height/2)
+    if y == "top":
+        y = int(h/4-image_height/2)
+    if y == "bottom":
+        y = int(h/1.25-image_height/2)
     else:
         y = float(y)
 
@@ -115,8 +123,8 @@ def show_reaction_time(x, y, scale, driver_name, reaction_time):
             pygame.draw.line(screen, (255, 255, 255), (x+image.get_width()/line_length, y+image.get_height()/3), (x+image.get_width()-image.get_width()/line_length, y+image.get_height()/3), 2)
 
 
-            line_length += 0.5*scale
-            time.sleep(0.03)
+            line_length += 0.5
+            time.sleep(0.02)
         elif sec_from_start > 1:
             pygame.draw.line(screen, (255, 255, 255), (x+image.get_width()/line_length, y+image.get_height()/3), (x+image.get_width()-image.get_width()/line_length, y+image.get_height()/3), 2)
 
@@ -125,19 +133,19 @@ def show_reaction_time(x, y, scale, driver_name, reaction_time):
         if not title_an_done:
             title.set_alpha(title_alpha)
             if title_alpha < 200:
-                title_alpha += 10*scale
+                title_alpha += 20
             elif title_alpha < 255:
-                title_alpha += 18*scale
+                title_alpha += 30
             else:
                 title_an_done = True
             time.sleep(0.05)
 
         if not text1_an_done and sec_from_start > 2:
             text1.set_alpha(text1_alpha)
-            if text1_alpha < 200:
-                text1_alpha += 10*scale
+            if text1_alpha < 180:
+                text1_alpha += 10
             elif text1_alpha < 255:
-                text1_alpha += 18*scale
+                text1_alpha += 22
             else:
                 image2_an = True
                 text1_an_done = True
@@ -145,27 +153,27 @@ def show_reaction_time(x, y, scale, driver_name, reaction_time):
 
         if image2_an:
             image2.set_alpha(image2_alpha)
-            image2_alpha += 7*scale
+            image2_alpha += 8*scale
 
             if image2_alpha > 255:
                 image2_an = False
                 backward_an = True
-                time.sleep(2)
+                time.sleep(0.3)
                 image.set_alpha(0)
 
             time.sleep(0.02)
 
         if backward_an:
-            pygame.draw.rect(screen, fuchsia, (x, y+image.get_height()-y_rect_diff-2, image_width, image_height+10*scale))
+            pygame.draw.rect(screen, fuchsia, (x, y+image.get_height()-(10*scale)-y_rect_diff, image_width, (image_height)+(20*scale)))
 
-            y_rect_diff += 10*(scale*scale)
+            y_rect_diff += 12*scale
 
-            if y_rect_diff > image_height+10*scale:
+            if y_rect_diff > (image_height)+(10*scale):
                 backward_an = False
-                time.sleep(0.5)
+                time.sleep(1)
                 run = False
 
-            time.sleep(0.03)
+            time.sleep(0.02)
 
         if round(time.time(), 1) != round(time_from_start, 1):
             sec_from_start += 0.1
@@ -176,6 +184,3 @@ def show_reaction_time(x, y, scale, driver_name, reaction_time):
         time.sleep(0.02)
 
     pygame.quit()
-
-if __name__ == "__main__":
-    show_reaction_time("auto", "auto", 1, "Larry", 5.55555)

@@ -1,0 +1,11 @@
+1749411652.7051172 | 2025-06-08 | 21:40:52 |--------Script start--------
+1749411664.068601 | 2025-06-08 | 21:41:04 |Race start registed| time from script start: 11.363483667373657s
+1749411664.0741017 | 2025-06-08 | 21:41:04 |Starting recording telemetry| time from script start: 11.368984460830688s
+1749411664.4841726 | 2025-06-08 | 21:41:04 |Reaction registed: 0.4070711135864258| time from script start: 11.77905535697937s
+1749411668.411358 | 2025-06-08 | 21:41:08 |100km/h registed: 4.3337562084198| time from script start: 15.705740928649902s
+1749411668.415859 | 2025-06-08 | 21:41:08 |Thread0, Name: MainThread, Daemon: False, Alive: True| time from script start: 15.710241794586182s
+1749411668.4198594 | 2025-06-08 | 21:41:08 |Thread1, Name: Thread-1 (recording_telemetry_data), Daemon: False, Alive: True| time from script start: 15.714241981506348s
+1749411668.6008916 | 2025-06-08 | 21:41:08 |Recording telemetry ended| time from script start: 15.895273685455322s
+1749411668.6038914 | 2025-06-08 | 21:41:08 |Thread0, Name: MainThread, Daemon: False, Alive: True| time from script start: 15.898774147033691s
+1749411668.6068923 | 2025-06-08 | 21:41:08 |Output writed| time from script start: 15.901775121688843s
+1749411684.4271529 | 2025-06-08 | 21:41:24 |Csv saved| time from script start: 31.721535444259644s

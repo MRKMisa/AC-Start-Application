@@ -1,0 +1,8 @@
+---ERROR--- | 1749411327.372344 | 2025-06-08 | 21:35:27
+Traceback (most recent call last):
+  File "c:\Users\pocitac\OneDrive - SŠINFIS\Python\AC reaction meter\V4.0\main.pyw", line 279, in <module>
+  File "c:\Users\pocitac\OneDrive - SŠINFIS\Python\AC reaction meter\V4.0\Utils\log.py", line 44, in write_script_output
+    script_time = time.time()-float(line.split(" |")[0])
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: could not convert string to float: ''
+

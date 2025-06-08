@@ -1,16 +1,24 @@
 import time
+from datetime import datetime
 import configparser
 import threading
 import csv
+import sys
+import os
 
-from get_shared_mem import get_shared_mem
-from datetime import datetime
-from show_reaction_time import show_reaction_time
-from show_kmph_time import show_kmph_time
+from Utils.get_shared_mem import get_shared_mem
+from Utils.show_reaction_time import show_reaction_time
+from Utils.show_kmph_time import show_kmph_time
+
+from Utils.log import *
+
+write_script_start()
 
 info = get_shared_mem()
 
 conf = configparser.ConfigParser()
+
+sys.excepthook = log_errors
 
 def load_config():
     conf.read("config.ini")
@@ -40,6 +48,10 @@ def load_config():
 
     csvDataFrequency = conf["Misc"]["csvDataFrequency"]
 
+    csvAutoDelete = conf["Misc"]["csvAutoDelete"]
+
+    csvMaxFiles = conf["Misc"]["csvMaxFiles"]
+
 
     configSettings = {"ShowReactionTimeGraphic":ShowReactionTimeGraphic,
                       "ReactionTimeGraphicScale":ReactionTimeGraphicScale,
@@ -53,7 +65,9 @@ def load_config():
 
                       "driverName":driverName,
                       "recordCsv":recordCsv,
-                      "csvDataFrequency":csvDataFrequency
+                      "csvDataFrequency":csvDataFrequency,
+                      "csvAutoDelete":csvAutoDelete,
+                      "csvMaxFiles":csvMaxFiles
                         }
     
     return configSettings
@@ -61,29 +75,18 @@ def load_config():
 change = False
 reset = False
 
-telemetry_data = []
-run = True
-
 def recording_telemetry_data():
     global telemetry_data
     telemetry_data = []
 
     global run
+    run = True
     while run:
         speedKmh, throttle, brake, clutch, gear, wheelSlip = info.physics.speedKmh, info.physics.gas, info.physics.brake, info.physics.clutch, info.physics.gear, info.physics.wheelSlip
         currentTime = info.graphics.currentTime
 
 
         now = datetime.now()
-        date = now.date()
-        if int(now.minute) < 10:
-            minute = "0"+str(now.minute)
-        else:
-            minute = now.minute
-        if int(now.second) < 10:
-            second = "0"+str(now.second)
-        else:
-            second = now.second
 
         if len(telemetry_data) != 0:
             delay = time.time()-float(telemetry_data[len(telemetry_data)-1]["time"])
@@ -93,10 +96,10 @@ def recording_telemetry_data():
         telemetry_data.append({
                           "number":len(telemetry_data),
                           "time":time.time(),
-                          "date":date,
+                          "date":now.date(),
                           "hour":now.hour,
-                          "minutes":minute,
-                          "seconds":second,
+                          "minutes":now.minute,
+                          "seconds":now.second,
                           "delay":delay,
 
                           "currentTime":currentTime,
@@ -150,8 +153,11 @@ while True:
                 reset = False
                 continue
             
+            write_script_output("Race start registed")
+
             if load_config()["recordCsv"].lower() == "true":
                 t1 = start_recording_telemery_data()
+                write_script_output("Starting recording telemetry")
             race_start_time = time.time()
 
             clutch = info.physics.clutch
@@ -159,6 +165,7 @@ while True:
                 clutch = info.physics.clutch
 
             reaction_time = time.time()-race_start_time
+            write_script_output(f"Reaction registed: {reaction_time}")
 
             speedKmh = info.physics.speedKmh
 
@@ -182,24 +189,24 @@ while True:
             if kmph_delay != "None" and kmph_delay != "Braked":
                 kmph_delay = time.time()-race_start_time
 
+            write_script_output(f"100km/h registed: {kmph_delay}")
+
             if load_config()["recordCsv"].lower() == "true":
+                for i, thread in enumerate(threading.enumerate()):
+                    write_script_output(f"Thread{i}, Name: {thread.name}, Daemon: {thread.daemon}, Alive: {thread.is_alive()}")
                 time.sleep(int(1000/int(load_config()["csvDataFrequency"]))/1000)
                 end_recording_telemetry_data()
                 t1.join()
+                write_script_output("Recording telemetry ended")
+                for i, thread in enumerate(threading.enumerate()):
+                    write_script_output(f"Thread{i}, Name: {thread.name}, Daemon: {thread.daemon}, Alive: {thread.is_alive()}")
 
             now = datetime.now()
-
-            if int(now.minute) < 10:
-                minute = "0"+str(now.minute)
-            else:
-                minute = now.minute
-            if int(now.second) < 10:
-                second = "0"+str(now.second)
-            else:
-                second = now.second
+            timestamp = now.strftime("%Y-%m-%d | %H:%M:%S")
 
             with open("output.txt", "a") as f:
-                f.write(f"{now.date()} | {now.hour}:{minute}:{second} | {info.static.track} | {info.static.carModel} | {round(reaction_time, 3)} | {kmph_delay} \n")
+                f.write(f"{time.time()} | {timestamp} | {info.static.track} | {info.static.carModel} | {round(reaction_time, 3)} | {kmph_delay} \n")
+                write_script_output("Output writed")
 
             configSettings = load_config()
 
@@ -209,19 +216,35 @@ while True:
             if configSettings["ShowkmphTimeGraphic"].lower() == "true":
                 show_kmph_time(configSettings["kmphTimeGraphicX"], configSettings["kmphTimeGraphicY"], configSettings["kmphTimeGraphicScale"], configSettings["driverName"], kmph_delay)
 
+            now = datetime.now()
+            timestamp = now.strftime("%Y-%m-%d %H-%M-%S")
             if load_config()["recordCsv"].lower() == "true":
-                file_name = f"{now.date()}  {now.hour}-{minute}-{second}  {info.static.track}  {info.static.carModel}  {round(reaction_time, 3)}  {kmph_delay}.csv"
+                file_name = f"{timestamp}  {info.static.track}  {info.static.carModel}  {round(reaction_time, 3)}  {kmph_delay}.csv"
 
                 with open(f"CSVs/{file_name}", "w", newline="") as csvfile:
 
+                    if load_config()["csvAutoDelete"].lower() == "true":
+                        write_script_output("Auto cleaning is turn on")
+                        dir_list = os.listdir("CSVs")
+
+                        rev_dir_list = dir_list
+
+                        rev_dir_list.reverse()
+
+                        for i, file in enumerate(rev_dir_list):
+                            if i > int(load_config()["csvMaxFiles"])-1:
+                                os.remove(f"CSVs/{file}")
+                                write_script_output(f"Remove: {file}")
+
                     if len(telemetry_data) == 0:
+                        write_script_output(f"Telemetry data is empty, waiting for thread end")
                         for t in range(20):
                             if len(telemetry_data) != 0:
                                 break
                             time.sleep(0.2)
                     
                     if len(telemetry_data) == 0:
-                        print(f"WARNING!!! Telemetry data can not be recorded")
+                        write_script_output(f"WARNING!!! Telemetry data can not be recorded")
                     else:
                         fieldnames = telemetry_data[0].keys()
 
@@ -229,6 +252,8 @@ while True:
 
                         writer.writeheader()
                         writer.writerows(telemetry_data)
+
+                        write_script_output("Csv saved")
 
             continue
 
@@ -251,8 +276,11 @@ while True:
                 reset = False
                 continue
             
+            write_script_output("Race start registed")
+
             if load_config()["recordCsv"].lower() == "true":
-                start_recording_telemery_data()
+                t1 = start_recording_telemery_data()
+                write_script_output("Starting recording telemetry")
             race_start_time = time.time()
 
             gear = info.physics.gear
@@ -260,6 +288,7 @@ while True:
                 gear = info.physics.gear
 
             reaction_time = time.time()-race_start_time
+            write_script_output(f"Reaction registed: {reaction_time}")
 
             speedKmh = info.physics.speedKmh
 
@@ -278,25 +307,31 @@ while True:
                 if speedKmh+1 < speedMax:
                     kmph_delay = "None"
                     break
-            if load_config()["recordCsv"].lower() == "true":
-                end_recording_telemetry_data()
 
             if kmph_delay != "None" and kmph_delay != "Braked":
                 kmph_delay = time.time()-race_start_time
 
-            now = datetime.now()
+            write_script_output(f"100km/h registed: {kmph_delay}")
 
-            if int(now.minute) < 10:
-                minute = "0"+str(now.minute)
-            else:
-                minute = now.minute
-            if int(now.second) < 10:
-                second = "0"+str(now.second)
-            else:
-                second = now.second
+            if load_config()["recordCsv"].lower() == "true":
+                for i, thread in enumerate(threading.enumerate()):
+                    write_script_output(f"Thread{i}, Name: {thread.name}, Daemon: {thread.daemon}, Alive: {thread.is_alive()}")
+                time.sleep(int(1000/int(load_config()["csvDataFrequency"]))/1000)
+                end_recording_telemetry_data()
+                t1.join()
+                write_script_output("Recording telemetry ended")
+                for i, thread in enumerate(threading.enumerate()):
+                    write_script_output(f"Thread{i}, Name: {thread.name}, Daemon: {thread.daemon}, Alive: {thread.is_alive()}")
+                
+
+            now = datetime.now()
+            timestamp = now.strftime("%Y-%m-%d | %H:%M:%S")
 
             with open("output.txt", "a") as f:
-                f.write(f"{now.date()} | {now.hour}:{minute}:{second} | {info.static.track} | {info.static.carModel} | {round(reaction_time, 3)} | {kmph_delay} \n")
+                f.write(f"{time.time()} | {timestamp} | {info.static.track} | {info.static.carModel} | {round(reaction_time, 3)} | {kmph_delay} \n")
+                write_script_output("Output writed")
+            
+            configSettings = load_config()
 
             if configSettings["ShowReactionTimeGraphic"].lower() == "true":
                 show_reaction_time(configSettings["ReactionTimeGraphicX"], configSettings["ReactionTimeGraphicY"], configSettings["ReactionTimeGraphicScale"], configSettings["driverName"], reaction_time)
@@ -304,16 +339,44 @@ while True:
             if configSettings["ShowkmphTimeGraphic"].lower() == "true":
                 show_kmph_time(configSettings["kmphTimeGraphicX"], configSettings["kmphTimeGraphicY"], configSettings["kmphTimeGraphicScale"], configSettings["driverName"], kmph_delay)
 
+            now = datetime.now()
+            timestamp = now.strftime("%Y-%m-%d %H-%M-%S")
             if load_config()["recordCsv"].lower() == "true":
-                file_name = f"{now.date()}  {now.hour}-{minute}-{second}  {info.static.track}  {info.static.carModel}  {round(reaction_time, 3)}  {kmph_delay}.csv"
+                file_name = f"{timestamp}  {info.static.track}  {info.static.carModel}  {round(reaction_time, 3)}  {kmph_delay}.csv"
 
                 with open(f"CSVs/{file_name}", "w", newline="") as csvfile:
-                    fieldnames = telemetry_data[0].keys()
 
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=";")
+                    if load_config()["csvAutoDelete"].lower() == "true":
+                        write_script_output("Auto cleaning is turn on")
+                        dir_list = os.listdir("CSVs")
 
-                    writer.writeheader()
-                    writer.writerows(telemetry_data)
+                        rev_dir_list = dir_list
+
+                        rev_dir_list.reverse()
+
+                        for i, file in enumerate(rev_dir_list):
+                            if i > int(load_config()["csvMaxFiles"])-1:
+                                os.remove(f"CSVs/{file}")
+                                write_script_output(f"Remove: {file}")
+
+                    if len(telemetry_data) == 0:
+                        write_script_output(f"Telemetry data is empty, waiting for thread end")
+                        for t in range(20):
+                            if len(telemetry_data) != 0:
+                                break
+                            time.sleep(0.2)
+                    
+                    if len(telemetry_data) == 0:
+                        write_script_output(f"WARNING!!! Telemetry data can not be recorded")
+                    else:
+                        fieldnames = telemetry_data[0].keys()
+
+                        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=";")
+
+                        writer.writeheader()
+                        writer.writerows(telemetry_data)
+
+                        write_script_output("Csv saved")
 
             continue
     else:

@@ -14,7 +14,7 @@ import win32con
 import win32gui
 import time
 
-from get_shared_mem import get_shared_mem
+from Utils.get_shared_mem import get_shared_mem
 
 
 def show_reaction_time(x, y, scale, driver_name, reaction_time):
